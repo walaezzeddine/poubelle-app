@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1087387451838",
+    "project_id": "poubelle-f39a1",
+    "storage_bucket": "poubelle-f39a1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087387451838:android:c1f9d034fe0d67df8fb9ef",
+        "android_client_info": {
+          "package_name": "com.example.poubelle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAShhcpOUldqEgYTXAUKE5Um4Qjunmyi2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
