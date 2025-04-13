@@ -138,7 +138,7 @@ Future<void> _login(BuildContext context) async {
       case 'admin':
         Navigator.pushReplacementNamed(context, '/admin');
         break;
-      case 'collector':
+      case 'chauffeur':
         Navigator.pushReplacementNamed(context, '/collector');
         break;
       default:

@@ -4,6 +4,9 @@ import 'package:poubelle/screens/admin-dashboard-screen.dart';
 import 'package:poubelle/screens/auth/reset_password_screen.dart';
 import 'package:poubelle/screens/collector-dashboard-screen.dart';
 import 'package:poubelle/screens/user-dashboard-screen.dart';
+import 'package:poubelle/screens/manage-sites-screen.dart';
+import 'package:poubelle/screens/manage-users-screen.dart';
+import 'package:poubelle/screens/statistics-screen.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'screens/auth/login_screen.dart';
@@ -39,10 +42,13 @@ class MyApp extends StatelessWidget {
           '/login': (context) => LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/home': (context) => const HomeScreen(),
-          '/admin-dashboard': (_) => const AdminDashboardScreen(),
-          '/collector-dashboard': (_) => const CollectorDashboardScreen(),
+          '/admin': (_) => const AdminDashboardScreen(),
+          '/collector': (_) => const CollectorDashboardScreen(),
          '/user': (_) => const UserDashboardScreen(),
           '/reset-password': (context) => const PasswordResetScreen(),
+          '/manage-users': (context) => ManageUsersScreen(),
+          '/manage-sites': (context) => ManageSitesScreen(),
+          '/statistics': (context) => StatisticsScreen(),
         },
         onUnknownRoute: (settings) { 
           return MaterialPageRoute(

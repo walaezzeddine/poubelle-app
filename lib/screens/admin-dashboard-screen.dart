@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import 'admin-menu-drawer.dart'; // ← importe ton menu réutilisable
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -20,6 +21,7 @@ class AdminDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
+      drawer: const AdminMenuDrawer(), // ← utilise le menu ici
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -28,7 +30,7 @@ class AdminDashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Action spécifique admin
+                Navigator.pushNamed(context, '/manage-users');
               },
               child: const Text('Gérer les utilisateurs'),
             ),
