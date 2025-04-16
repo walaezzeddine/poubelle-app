@@ -1,14 +1,14 @@
-// lib/widgets/admin_menu_drawer.dart
+// lib/widgets/user_menu_drawer.dart
+
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import '../screens/auth/login_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 
-class AdminMenuDrawer extends StatelessWidget {
-  const AdminMenuDrawer({super.key});
+class UserMenuDrawer extends StatelessWidget {
+  const UserMenuDrawer({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class AdminMenuDrawer extends StatelessWidget {
               color: Colors.green,
             ),
             child: Text(
-              'Menu Admin',
+              'Menu Agent',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -31,38 +31,23 @@ class AdminMenuDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text('Gérer les utilisateurs'),
+            title: const Text('Gérer les poubelles'),
             onTap: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                Navigator.pushNamed(context, '/manage-users');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
+              Navigator.pushNamed(context, '/manage-poubelles');
             },
           ),
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Gérer les sites'),
             onTap: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                Navigator.pushNamed(context, '/manage-sites');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
+              Navigator.pushNamed(context, '/manage-sites');
             },
           ),
           ListTile(
             leading: const Icon(Icons.analytics),
             title: const Text('Statistiques'),
             onTap: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                Navigator.pushNamed(context, '/statistics');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
+              Navigator.pushNamed(context, '/statistics');
             },
           ),
           const Divider(),
@@ -71,11 +56,7 @@ class AdminMenuDrawer extends StatelessWidget {
             title: const Text('Se déconnecter'),
             onTap: () async {
               await Provider.of<AuthService>(context, listen: false).signOut();
-              Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-              (route) => false, // Supprime toutes les routes précédentes
-            );
+              Navigator.pushReplacementNamed(context, '/login');
             },
           ),
         ],
@@ -83,3 +64,5 @@ class AdminMenuDrawer extends StatelessWidget {
     );
   }
 }
+
+

@@ -6,10 +6,7 @@ class SitesService {
   // Fonction pour récupérer les sites
   Future<List<Map<String, dynamic>>> getSites() async {
     try {
-      // Récupérer la collection 'sites' depuis Firestore
       final snapshot = await _firestore.collection('sites').get();
-
-      // Mapper les documents Firestore en une liste de maps
       List<Map<String, dynamic>> sites = snapshot.docs.map((doc) {
         return {
           'id': doc.id,
@@ -18,7 +15,6 @@ class SitesService {
           'nom': doc['nom'],
         };
       }).toList();
-
       return sites;
     } catch (e) {
       throw Exception('Erreur lors de la récupération des sites : $e');
@@ -26,7 +22,7 @@ class SitesService {
   }
 
   // Fonction pour ajouter un site
-  Future<void> addSite(String codeP, String nbPoubelles, String nom) async {
+  Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
     try {
       await _firestore.collection('sites').add({
         'codeP': codeP,
@@ -39,7 +35,7 @@ class SitesService {
   }
 
   // Fonction pour modifier un site
-  Future<void> updateSite(String id, String codeP, String nbPoubelles, String nom) async {
+  Future<void> updateSite(String id, int codeP, int nbPoubelles, String nom) async {
     try {
       await _firestore.collection('sites').doc(id).update({
         'codeP': codeP,
@@ -59,4 +55,38 @@ class SitesService {
       throw Exception('Erreur lors de la suppression du site : $e');
     }
   }
+
+  // Fonction de recherche partielle
+Future<List<Map<String, dynamic>>> searchSitePartial({int? codeP, String? nom}) async {
+  try {
+    // Récupérer tous les sites (attention si la collection est très grande)
+    final snapshot = await FirebaseFirestore.instance.collection('sites').get();
+
+    // Transformation en liste
+    List<Map<String, dynamic>> sites = snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        'codeP': doc['codeP'],
+        'nom': doc['nom'],
+      };
+    }).toList();
+
+    // Filtrage local par codeP si fourni
+    if (codeP != null) {
+      sites = sites.where((site) => site['codeP'] == codeP).toList();
+    }
+
+    // Filtrage local par nom si fourni
+    if (nom != null && nom.isNotEmpty) {
+      sites = sites.where((site) => site['nom'].toLowerCase().contains(nom.toLowerCase())).toList();
+    }
+
+    // Exclure les noms admin
+    return sites.where((site) => site['nom'] != 'admin').toList();
+  } catch (e) {
+    throw 'Erreur lors de la recherche partielle : ${e.toString()}';
+  }
+}
+
+
 }

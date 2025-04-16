@@ -22,6 +22,13 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     super.initState();
     _loadUsers(); // Charger les utilisateurs au démarrage
   }
+    // Fonction pour verifier le format de l'email
+    bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+    );
+    return emailRegex.hasMatch(email);
+    }
 
   // Fonction pour charger les utilisateurs et extraire les rôles distincts
   Future<void> _loadUsers() async {
@@ -91,26 +98,34 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               child: const Text('Annuler'),
             ),
             ElevatedButton(
-              onPressed: () async {
-                final email = emailController.text.trim();
-                final role = _selectedRole;
+                onPressed: () async {
+                    final email = emailController.text.trim();
+                    final role = _selectedRole;
 
-                if (email.isEmpty || role == null) return;
+                    // Vérifier si l'email est valide
+                    if (email.isEmpty || role == null) return;
+                    if (!_isValidEmail(email)) {
+                    // Afficher un message d'erreur si l'email n'est pas valide
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Email invalide. Veuillez entrer un email valide.')),
+                    );
+                    return;
+                    }
 
-                if (user == null) {
-                  // Ajouter
-                  await _userService.addUser(email, role);
-                } else {
-                  // Modifier
-                  await _userService.updateUser(user['id'], email, role);
-                }
+                    if (user == null) {
+                    // Ajouter
+                    await _userService.addUser(email, role);
+                    } else {
+                    // Modifier
+                    await _userService.updateUser(user['id'], email, role);
+                    }
 
-                Navigator.pop(context);
-                setState(() {
-                  _loadUsers(); // Recharger la liste après modification
-                });
-              },
-              child: Text(user == null ? 'Ajouter' : 'Modifier'),
+                    Navigator.pop(context);
+                    setState(() {
+                    _loadUsers(); // Recharger la liste après modification
+                    });
+                },
+                child: Text(user == null ? 'Ajouter' : 'Modifier'),
             ),
           ],
         );
@@ -159,7 +174,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           children: [
             const Text(
               'Liste des utilisateurs',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 106, 9),),
             ),
             const SizedBox(height: 20),
             // Zone de recherche
@@ -169,7 +184,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   child: TextField(
                     decoration: const InputDecoration(
                       labelText: 'Recherche par email',
-                      prefixIcon: Icon(Icons.email),
+                      prefixIcon: Icon(Icons.email,color: Color.fromARGB(255, 206, 206, 206)),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -183,7 +198,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   child: TextField(
                     decoration: const InputDecoration(
                       labelText: 'Recherche par rôle',
-                      prefixIcon: Icon(Icons.person),
+                      prefixIcon: Icon(Icons.person,color: Colors.blue),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -209,11 +224,11 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit),
+                            icon: const Icon(Icons.edit,color: Color.fromARGB(255, 229, 131, 31)),
                             onPressed: () => _showUserDialog(user: user),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete),
+                            icon: const Icon(Icons.delete,color: Colors.red),
                             onPressed: () => _confirmDelete(user['id']),
                           ),
                         ],
@@ -226,7 +241,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => _showUserDialog(),
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add,color: Color.fromARGB(255, 48, 48, 48)),
               label: const Text('Ajouter un utilisateur'),
             ),
           ],

@@ -25,45 +25,45 @@ class UserService {
     }
   }
 
-Future<List<Map<String, dynamic>>> searchUsersPartial({String? email, String? role}) async {
-  try {
-    Query query = _firestore.collection('users');
+    Future<List<Map<String, dynamic>>> searchUsersPartial({String? email, String? role}) async {
+    try {
+        Query query = _firestore.collection('users');
 
-    if (email != null && email.isNotEmpty) {
-      query = query
-        .orderBy('email')
-        .startAt([email])
-        .endAt(['$email\uf8ff']);
+        if (email != null && email.isNotEmpty) {
+        query = query
+            .orderBy('email')
+            .startAt([email])
+            .endAt(['$email\uf8ff']);
+        }
+
+        final snapshot = await query.get();
+
+        // Filtrage local des utilisateurs
+        final users = snapshot.docs.map((doc) {
+        return {
+            'id': doc.id,
+            'email': doc['email'],
+            'role': doc['role'],
+        };
+        }).toList();
+
+        // Si un rôle est spécifié, on applique un filtrage pour le rôle
+        if (role != null && role.isNotEmpty) {
+        // Recherche par rôle
+        final filteredByRole = users.where((user) =>
+            user['role'].toString().toLowerCase().contains(role.toLowerCase())
+        ).toList();
+
+        // Exclure les administrateurs de la recherche, même si le rôle "admin" est recherché
+        return filteredByRole.where((user) => user['role'] != 'admin').toList();
+        }
+
+        // Si aucun rôle n'est spécifié, retourner tous les utilisateurs en excluant les administrateurs
+        return users.where((user) => user['role'] != 'admin').toList();
+    } catch (e) {
+        throw 'Erreur lors de la recherche partielle : ${e.toString()}';
     }
-
-    final snapshot = await query.get();
-
-    // Filtrage local des utilisateurs
-    final users = snapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        'email': doc['email'],
-        'role': doc['role'],
-      };
-    }).toList();
-
-    // Si un rôle est spécifié, on applique un filtrage pour le rôle
-    if (role != null && role.isNotEmpty) {
-      // Recherche par rôle
-      final filteredByRole = users.where((user) =>
-        user['role'].toString().toLowerCase().contains(role.toLowerCase())
-      ).toList();
-
-      // Exclure les administrateurs de la recherche, même si le rôle "admin" est recherché
-      return filteredByRole.where((user) => user['role'] != 'admin').toList();
     }
-
-    // Si aucun rôle n'est spécifié, retourner tous les utilisateurs en excluant les administrateurs
-    return users.where((user) => user['role'] != 'admin').toList();
-  } catch (e) {
-    throw 'Erreur lors de la recherche partielle : ${e.toString()}';
-  }
-}
 
   // Ajouter un utilisateur
   Future<void> addUser(String email, String role) async {

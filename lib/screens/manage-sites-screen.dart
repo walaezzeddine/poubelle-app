@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Pour les inputFormatters
 import '../../services/sites_services.dart'; 
 import '../../screens/admin-menu-drawer.dart'; 
 
@@ -29,11 +30,20 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
     });
   }
 
+  // Filtrer les utilisateurs selon les critères de recherche
+  List<Map<String, dynamic>> _filterSites() {
+    return _sites.where((site) {
+      final codePMatch = site['codeP'].toString().toLowerCase().contains(_searchCodeP.toLowerCase());
+      final nomMatch = site['nom'].toLowerCase().contains(_searchNom.toLowerCase());
+      return codePMatch && nomMatch;
+    }).toList();
+  }
+
   // Afficher le dialogue pour ajouter/éditer un site
   Future<void> _showSiteDialog({Map<String, dynamic>? site}) async {
-    final codePController = TextEditingController(text: site?['codeP']);
-    final nbPoubellesController = TextEditingController(text: site?['nbPoubelles']);
-    final nomController = TextEditingController(text: site?['nom']);
+    final codePController = TextEditingController(text: site?['codeP']?.toString() ?? '');
+    final nbPoubellesController = TextEditingController(text: site?['nbPoubelles']?.toString() ?? '');
+    final nomController = TextEditingController(text: site?['nom'] ?? '');
 
     await showDialog(
       context: context,
@@ -45,10 +55,14 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
             children: [
               TextField(
                 controller: codePController,
+                keyboardType: TextInputType.number, // Limiter aux chiffres
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Autoriser uniquement les chiffres
                 decoration: const InputDecoration(labelText: 'Code P'),
               ),
               TextField(
                 controller: nbPoubellesController,
+                keyboardType: TextInputType.number, // Limiter aux chiffres
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Autoriser uniquement les chiffres
                 decoration: const InputDecoration(labelText: 'Nombre de Poubelles'),
               ),
               TextField(
@@ -68,14 +82,31 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
                 final nbPoubelles = nbPoubellesController.text.trim();
                 final nom = nomController.text.trim();
 
-                if (codeP.isEmpty || nbPoubelles.isEmpty || nom.isEmpty) return;
+                if (codeP.isEmpty || nbPoubelles.isEmpty || nom.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tous les champs doivent être remplis.')),
+                  );
+                  return;
+                }
+
+                // Convertir en entiers
+                final codePInt = int.tryParse(codeP);
+                final nbPoubellesInt = int.tryParse(nbPoubelles);
+
+                // Vérifier si les valeurs sont valides
+                if (codePInt == null || nbPoubellesInt == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Veuillez entrer des valeurs valides pour le codeP et le nombre de poubelles.')),
+                  );
+                  return;
+                }
 
                 if (site == null) {
                   // Ajouter
-                  await _sitesService.addSite(codeP, nbPoubelles, nom);
+                  await _sitesService.addSite(codePInt, nbPoubellesInt, nom);
                 } else {
                   // Modifier
-                  await _sitesService.updateSite(site['id'], codeP, nbPoubelles, nom);
+                  await _sitesService.updateSite(site['id'], codePInt, nbPoubellesInt, nom);
                 }
 
                 Navigator.pop(context);
@@ -132,7 +163,7 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
           children: [
             const Text(
               'Liste des sites',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Color.fromARGB(255, 9, 106, 9),),
             ),
             const SizedBox(height: 20),
             // Zone de recherche
@@ -147,7 +178,6 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
                     onChanged: (value) {
                       setState(() {
                         _searchCodeP = value;
-                        _loadSites(); // Rechercher à chaque modification du code P
                       });
                     },
                   ),
@@ -157,12 +187,11 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
                   child: TextField(
                     decoration: const InputDecoration(
                       labelText: 'Recherche par nom',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: Icon(Icons.search,color: Color.fromARGB(255, 48, 48, 48)),
                     ),
                     onChanged: (value) {
                       setState(() {
                         _searchNom = value;
-                        _loadSites(); // Rechercher à chaque modification du nom
                       });
                     },
                   ),
@@ -172,9 +201,9 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: _sites.length,
+                itemCount: _filterSites().length,
                 itemBuilder: (context, index) {
-                  final site = _sites[index];
+                  final site = _filterSites()[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: ListTile(
@@ -184,11 +213,11 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit),
+                            icon: const Icon(Icons.edit,color: Color.fromARGB(255, 229, 131, 31)),
                             onPressed: () => _showSiteDialog(site: site),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete),
+                            icon: const Icon(Icons.delete,color: Colors.red),
                             onPressed: () => _confirmDelete(site['id']),
                           ),
                         ],
@@ -201,7 +230,7 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => _showSiteDialog(),
-              icon: const Icon(Icons.add, color: Colors.white),
+              icon: const Icon(Icons.add, color: Color.fromARGB(255, 48, 48, 48)),
               label: const Text('Ajouter un site'),
             ),
           ],

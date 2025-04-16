@@ -13,6 +13,7 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
+import 'package:poubelle/screens/manage-poubelles-screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
           '/manage-users': (context) => ManageUsersScreen(),
           '/manage-sites': (context) => ManageSitesScreen(),
           '/statistics': (context) => StatisticsScreen(),
+          '/manage-poubelles': (context) => ContainerCreationPage(),
         },
         onUnknownRoute: (settings) { 
           return MaterialPageRoute(
