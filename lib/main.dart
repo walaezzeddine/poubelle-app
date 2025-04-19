@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
           '/manage-users': (context) => ManageUsersScreen(),
           '/manage-sites': (context) => ManageSitesScreen(),
           '/statistics': (context) => StatisticsScreen(),
-          '/manage-poubelles': (context) => ContainerCreationPage(),
+          '/manage-poubelles': (context) => ManagePoubellesScreen(),
         },
         onUnknownRoute: (settings) { 
           return MaterialPageRoute(

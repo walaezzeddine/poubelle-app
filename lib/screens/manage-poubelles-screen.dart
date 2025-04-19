@@ -1,237 +1,122 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:http/http.dart' as http;
-import 'package:poubelle/services/poubelles_service.dart';
-import 'package:poubelle/services/sites_services.dart';
+import '../../services/poubelles_service.dart';
+import './container_creation_page.dart'; // importe ton ajout ici
 
+class ManagePoubellesScreen extends StatefulWidget {
+  const ManagePoubellesScreen({super.key});
 
-void main() {
-  runApp(MaterialApp(
-    home: ContainerCreationPage(),
-  ));
-}
-
-
-class ContainerCreationPage extends StatefulWidget {
   @override
-  _ContainerCreationPageState createState() => _ContainerCreationPageState();
+  State<ManagePoubellesScreen> createState() => _ManagePoubellesScreenState();
 }
 
+class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
+  final PoubellesService _poubelleService = PoubellesService();
+  List<Map<String, dynamic>> _poubelles = [];
+  String _searchSite = '';
 
-class _ContainerCreationPageState extends State<ContainerCreationPage> {
   @override
   void initState() {
     super.initState();
-    _loadSites(); // Charger les sites au démarrage
+    _loadPoubelles();
   }
 
-
-  final SitesService _siteService = SitesService();
-  final PoubellesService _poubelleService = PoubellesService();
-
-
-  LatLng _initialPosition = LatLng(36.4549, 10.7252);
-  LatLng _selectedPosition = LatLng(36.4549, 10.7252);
-  List<String> _sites = [];
-  String? _selectedSite;
-
-
-  final TextEditingController _latController = TextEditingController();
-  final TextEditingController _lngController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-
-
-  Future<void> _loadSites() async {
-    final sites = await _siteService.getSites();
+  Future<void> _loadPoubelles() async {
+    final data = await _poubelleService.getPoubelles(); // méthode à créer côté service
     setState(() {
-      _sites = _getDistinctSite(sites);
+      _poubelles = data;
     });
   }
 
-
-  List<String> _getDistinctSite(List<Map<String, dynamic>> sites) {
-    Set<String> siteSet = {};
-    for (var site in sites) {
-      siteSet.add(site['nom']);
-    }
-    return siteSet.toList();
-  }
-void changeADR(position) async{
-  try {
-      final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&addressdetails=1',
-      );
-
-
-      final response = await http.get(url, headers: {
-        'User-Agent': 'FlutterApp/1.0 (contact@example.com)',
-      });
-
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final displayName = data['display_name'];
-        _addressController.text = displayName ?? "Adresse introuvable";
-      } else {
-        _addressController.text = "Erreur lors de la récupération de l'adresse";
-      }
-    } catch (e) {
-      _addressController.text = "Erreur: ${e.toString()}";
-    }
-}
-  void _onMapTap(LatLng position) async {
-    _latController.text = position.latitude.toString();
-    _lngController.text = position.longitude.toString();
-    print(position);
-    changeADR(position);
-    _updateMarker();
-
-
- 
+  List<Map<String, dynamic>> _filterPoubelles() {
+    return _poubelles.where((poubelle) {
+      final siteMatch = poubelle['site'].toLowerCase().contains(_searchSite.toLowerCase());
+      return siteMatch;
+    }).toList();
   }
 
-
-  void _onCreatePressed() async {
-    final lat = double.tryParse(_latController.text);
-    final lng = double.tryParse(_lngController.text);
-
-
-    if (lat == null || lng == null || _selectedSite == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Veuillez remplir tous les champs (site, latitude, longitude).')),
-      );
-      return;
-    }
-
-
-    await _poubelleService.addPoubelle(
-      lat,
-      lng,
-      _addressController.text,
-      _selectedSite!, // <-- site ajouté ici
-    );
-
-
-    print("Site: $_selectedSite");
-    print("Latitude: ${_latController.text}");
-    print("Longitude: ${_lngController.text}");
-    print("Adresse: ${_addressController.text}");
+  void _deletePoubelle(String id) async {
+    await _poubelleService.deletePoubelle(id); // méthode delete dans ton service
+    _loadPoubelles(); // rafraîchir la liste
   }
 
-
-  void _updateMarker() {
-    double? lat = double.tryParse(_latController.text);
-    double? lng = double.tryParse(_lngController.text);
-    if (lat != null && lng != null) {
-      setState(() {
-        _selectedPosition = LatLng(lat, lng);
-      });
-    }
+  void _editPoubelle(Map<String, dynamic> poubelle) {
+    // à implémenter plus tard
+    print('Édition de : $poubelle');
   }
-
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filterPoubelles();
+
     return Scaffold(
-      appBar: AppBar(title: Text("Nouvelle poubelle")),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          children: [
-            DropdownButtonFormField<String>(
-              value: _selectedSite,
-              items: _sites.map((site) {
-                return DropdownMenuItem<String>(
-                  value: site,
-                  child: Text(site),
-                );
-              }).toList(),
-              onChanged: (newsite) {
+      appBar: AppBar(
+        title: Text('Gestion des poubelles'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ContainerCreationPage()),
+              );
+              _loadPoubelles(); // recharger après ajout
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Recherche par site',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
                 setState(() {
-                  _selectedSite = newsite;
+                  _searchSite = value;
                 });
               },
-              decoration: const InputDecoration(labelText: 'Site'),
-              hint: const Text('Sélectionner un site'),
             ),
-           TextField(
-            controller: _latController,
-            decoration: InputDecoration(labelText: "Latitude"),
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            onChanged: (value) {
-              double? lat = double.tryParse(_latController.text);
-              double? lng = double.tryParse(_lngController.text);
-              if (lat != null && lng != null) {
-                LatLng position = LatLng(lat, lng);
-                changeADR(position);
-                _updateMarker();
-              }
-            },
           ),
-          TextField(
-            controller: _lngController,
-            decoration: InputDecoration(labelText: "Longitude"),
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            onChanged: (value) {
-              double? lat = double.tryParse(_latController.text);
-              double? lng = double.tryParse(_lngController.text);
-              if (lat != null && lng != null) {
-                LatLng position = LatLng(lat, lng);
-                changeADR(position);
-                _updateMarker();
-              }
-            },
-          ),
-            TextField(
-              controller: _addressController,
-              decoration: InputDecoration(labelText: "Adresse"),
-              readOnly: true,
-            ),
-            SizedBox(height: 10),
-            SizedBox(
-              height: 250,
-              child: FlutterMap(
-                options: MapOptions(
-                  center: _initialPosition,
-                  zoom: 14,
-                  onTap: (tapPosition, point) {
-                    _onMapTap(point);
-                  },
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _selectedPosition,
-                        width: 40,
-                        height: 40,
-                        child: Icon(
-                          Icons.location_pin,
-                          color: Colors.red,
-                          size: 40,
+          Expanded(
+            child: ListView.builder(
+              itemCount: filtered.length,
+              itemBuilder: (context, index) {
+                final poubelle = filtered[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: ListTile(
+                    title: Text('Site: ${poubelle['site']}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Adresse: ${poubelle['adresse']}'),
+                        Text('Latitude: ${poubelle['latitude']}'),
+                        Text('Longitude: ${poubelle['longitude']}'),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit, color: Colors.orange),
+                          onPressed: () => _editPoubelle(poubelle),
                         ),
-                      ),
-                    ],
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deletePoubelle(poubelle['id']),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _onCreatePressed,
-              child: Text("Create"),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
-
-
