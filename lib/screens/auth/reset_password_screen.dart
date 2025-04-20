@@ -16,7 +16,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez entrer votre email')),
+        const SnackBar(content: Text('Veuillez entrer votre email'),backgroundColor: Colors.red,),
       );
       return;
     }
@@ -27,12 +27,12 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
           .resetPassword(_emailController.text.trim());
           
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email de réinitialisation envoyé')),
+        const SnackBar(content: Text('Email de réinitialisation envoyé'),backgroundColor: Colors.green,),
       );
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(e.toString()),backgroundColor: Colors.red,),
       );
     } finally {
       setState(() => _isLoading = false);

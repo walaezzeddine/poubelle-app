@@ -1,100 +1,65 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class UserService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String baseUrl = "http://localhost:3000";
 
-  // Récupérer la liste des utilisateurs
   Future<List<Map<String, dynamic>>> getUsers() async {
-    try {
-      final snapshot = await _firestore.collection('users').get();
+    final response = await http.get(Uri.parse('$baseUrl/api/user/users'));
 
-      final users = snapshot.docs.map((doc) {
-        return {
-          'id': doc.id,
-          'email': doc['email'],
-          'role': doc['role'],
-        };
-      }).toList();
-
-      // Filtrage des administrateurs dans le code
-      final filteredUsers = users.where((user) => user['role'] != 'admin').toList();
-
-      return filteredUsers;
-    } catch (e) {
-      throw 'Erreur lors de la récupération des utilisateurs: ${e.toString()}';
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((user) => user as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Erreur lors de la récupération des utilisateurs');
     }
   }
 
-    Future<List<Map<String, dynamic>>> searchUsersPartial({String? email, String? role}) async {
-    try {
-        Query query = _firestore.collection('users');
-
-        if (email != null && email.isNotEmpty) {
-        query = query
-            .orderBy('email')
-            .startAt([email])
-            .endAt(['$email\uf8ff']);
-        }
-
-        final snapshot = await query.get();
-
-        // Filtrage local des utilisateurs
-        final users = snapshot.docs.map((doc) {
-        return {
-            'id': doc.id,
-            'email': doc['email'],
-            'role': doc['role'],
-        };
-        }).toList();
-
-        // Si un rôle est spécifié, on applique un filtrage pour le rôle
-        if (role != null && role.isNotEmpty) {
-        // Recherche par rôle
-        final filteredByRole = users.where((user) =>
-            user['role'].toString().toLowerCase().contains(role.toLowerCase())
-        ).toList();
-
-        // Exclure les administrateurs de la recherche, même si le rôle "admin" est recherché
-        return filteredByRole.where((user) => user['role'] != 'admin').toList();
-        }
-
-        // Si aucun rôle n'est spécifié, retourner tous les utilisateurs en excluant les administrateurs
-        return users.where((user) => user['role'] != 'admin').toList();
-    } catch (e) {
-        throw 'Erreur lors de la recherche partielle : ${e.toString()}';
-    }
-    }
-
   // Ajouter un utilisateur
   Future<void> addUser(String email, String role) async {
-    try {
-      await _firestore.collection('users').add({
-        'email': email,
-        'role': role,
-      });
-    } catch (e) {
-      throw 'Erreur lors de l\'ajout de l\'utilisateur: ${e.toString()}';
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/user/users'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'role': role}),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Erreur lors de l\'ajout de l\'utilisateur');
     }
   }
 
   // Mettre à jour un utilisateur
   Future<void> updateUser(String id, String email, String role) async {
-    try {
-      await _firestore.collection('users').doc(id).update({
-        'email': email,
-        'role': role,
-      });
-    } catch (e) {
-      throw 'Erreur lors de la mise à jour de l\'utilisateur: ${e.toString()}';
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/user/users/$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'role': role}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur lors de la mise à jour de l\'utilisateur');
     }
   }
 
   // Supprimer un utilisateur
   Future<void> deleteUser(String id) async {
-    try {
-      await _firestore.collection('users').doc(id).delete();
-    } catch (e) {
-      throw 'Erreur lors de la suppression de l\'utilisateur: ${e.toString()}';
+    final response = await http.delete(Uri.parse('$baseUrl/api/user/users/$id'));
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur lors de la suppression de l\'utilisateur');
+    }
+  }
+
+  // Recherche partielle des utilisateurs
+  Future<List<Map<String, dynamic>>> searchUsersPartial(String email, String role) async {
+    final uri = Uri.parse('$baseUrl/api/user/users/search?email=$email&role=$role');
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((user) => user as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Erreur lors de la recherche d\'utilisateurs');
     }
   }
 }

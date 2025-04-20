@@ -12,43 +12,42 @@ class ManageUsersScreen extends StatefulWidget {
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
   final UserService _userService = UserService();
   List<Map<String, dynamic>> _users = [];
-  List<String> _roles = []; // Liste des rôles qui sera mise à jour
+  List<String> _roles = [];
   String _searchEmail = '';
   String _searchRole = '';
-  String? _selectedRole; // Rôle sélectionné
+  String? _selectedRole;
 
   @override
   void initState() {
     super.initState();
-    _loadUsers(); // Charger les utilisateurs au démarrage
+    _loadUsers();
   }
-    // Fonction pour verifier le format de l'email
-    bool _isValidEmail(String email) {
-    final emailRegex = RegExp(
-        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-    );
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
     return emailRegex.hasMatch(email);
-    }
-
-  // Fonction pour charger les utilisateurs et extraire les rôles distincts
-  Future<void> _loadUsers() async {
-    final users = await _userService.getUsers(); // Récupérer tous les utilisateurs
-    setState(() {
-      _users = users;
-      _roles = _getDistinctRoles(users); // Extraire les rôles distincts
-    });
   }
 
-  // Extraire les rôles distincts des utilisateurs
+  Future<void> _loadUsers() async {
+    try {
+      final users = await _userService.getUsers();
+      setState(() {
+        _users = users;
+        _roles = _getDistinctRoles(users);
+      });
+    } catch (e) {
+      print('Erreur de chargement des utilisateurs : $e');
+    }
+  }
+
   List<String> _getDistinctRoles(List<Map<String, dynamic>> users) {
     Set<String> rolesSet = {};
     for (var user in users) {
-      rolesSet.add(user['role']); // Ajouter chaque rôle unique
+      rolesSet.add(user['role']);
     }
-    return rolesSet.toList(); // Convertir en liste
+    return rolesSet.toList();
   }
 
-  // Filtrer les utilisateurs selon les critères de recherche
   List<Map<String, dynamic>> _filterUsers() {
     return _users.where((user) {
       final emailMatch = user['email'].toLowerCase().contains(_searchEmail.toLowerCase());
@@ -57,10 +56,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     }).toList();
   }
 
-  // Afficher le dialogue pour ajouter/éditer un utilisateur
   Future<void> _showUserDialog({Map<String, dynamic>? user}) async {
     final emailController = TextEditingController(text: user?['email']);
-    _selectedRole = user?['role']; // Pré-sélectionner le rôle si un utilisateur existe
+    _selectedRole = user?['role'];
 
     await showDialog(
       context: context,
@@ -93,39 +91,33 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
             ElevatedButton(
-                onPressed: () async {
-                    final email = emailController.text.trim();
-                    final role = _selectedRole;
+              onPressed: () async {
+                final email = emailController.text.trim();
+                final role = _selectedRole;
 
-                    // Vérifier si l'email est valide
-                    if (email.isEmpty || role == null) return;
-                    if (!_isValidEmail(email)) {
-                    // Afficher un message d'erreur si l'email n'est pas valide
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Email invalide. Veuillez entrer un email valide.')),
-                    );
-                    return;
-                    }
+                if (email.isEmpty || role == null) return;
+                if (!_isValidEmail(email)) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Email invalide.')));
+                  return;
+                }
 
-                    if (user == null) {
-                    // Ajouter
+                try {
+                  if (user == null) {
                     await _userService.addUser(email, role);
-                    } else {
-                    // Modifier
+                  } else {
                     await _userService.updateUser(user['id'], email, role);
-                    }
-
-                    Navigator.pop(context);
-                    setState(() {
-                    _loadUsers(); // Recharger la liste après modification
-                    });
-                },
-                child: Text(user == null ? 'Ajouter' : 'Modifier'),
+                  }
+                  Navigator.pop(context);
+                  setState(() {
+                    _loadUsers();
+                  });
+                } catch (e) {
+                  print('Erreur : $e');
+                }
+              },
+              child: Text(user == null ? 'Ajouter' : 'Modifier'),
             ),
           ],
         );
@@ -133,7 +125,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     );
   }
 
-  // Confirmer la suppression d'un utilisateur
   Future<void> _confirmDelete(String userId) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -141,51 +132,40 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         title: const Text('Confirmer la suppression'),
         content: const Text('Voulez-vous vraiment supprimer cet utilisateur ?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Supprimer', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
 
     if (confirm == true) {
-      await _userService.deleteUser(userId);
-      setState(() {
-        _loadUsers(); // Recharger la liste après suppression
-      });
+      try {
+        await _userService.deleteUser(userId);
+        setState(() {
+          _loadUsers();
+        });
+      } catch (e) {
+        print('Erreur lors de la suppression de l\'utilisateur : $e');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gérer les utilisateurs'),
-      ),
-      drawer: const AdminMenuDrawer(), // ← menu réutilisé
+      appBar: AppBar(title: const Text('Gérer les utilisateurs')),
+      drawer: const AdminMenuDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text(
-              'Liste des utilisateurs',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 106, 9),),
-            ),
+            const Text('Liste des utilisateurs', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 106, 9))),
             const SizedBox(height: 20),
-            // Zone de recherche
             Row(
               children: [
                 Expanded(
                   child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Recherche par email',
-                      prefixIcon: Icon(Icons.email,color: Color.fromARGB(255, 206, 206, 206)),
-                    ),
+                    decoration: const InputDecoration(labelText: 'Recherche par email', prefixIcon: Icon(Icons.email, color: Color.fromARGB(255, 206, 206, 206))),
                     onChanged: (value) {
                       setState(() {
                         _searchEmail = value;
@@ -196,10 +176,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Recherche par rôle',
-                      prefixIcon: Icon(Icons.person,color: Colors.blue),
-                    ),
+                    decoration: const InputDecoration(labelText: 'Recherche par rôle', prefixIcon: Icon(Icons.person, color: Colors.blue)),
                     onChanged: (value) {
                       setState(() {
                         _searchRole = value;
@@ -224,11 +201,11 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit,color: Color.fromARGB(255, 229, 131, 31)),
+                            icon: const Icon(Icons.edit, color: Color.fromARGB(255, 229, 131, 31)),
                             onPressed: () => _showUserDialog(user: user),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete,color: Colors.red),
+                            icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _confirmDelete(user['id']),
                           ),
                         ],
@@ -241,7 +218,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => _showUserDialog(),
-              icon: const Icon(Icons.add,color: Color.fromARGB(255, 48, 48, 48)),
+              icon: const Icon(Icons.add, color: Color.fromARGB(255, 48, 48, 48)),
               label: const Text('Ajouter un utilisateur'),
             ),
           ],

@@ -1,8 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
 class PoubellesService {
   final String baseUrl = "http://localhost:3000"; // Change si backend est en ligne
+
 
   // 📦 Récupérer toutes les poubelles
   Future<List<Map<String, dynamic>>> getPoubelles() async {
@@ -19,6 +21,7 @@ class PoubellesService {
     }
   }
 
+
   // ➕ Ajouter une poubelle
   Future<void> addPoubelle(
       double latitude, double longitude, String adresse, String site) async {
@@ -34,6 +37,7 @@ class PoubellesService {
         }),
       );
 
+
       if (response.statusCode != 201) {
         throw Exception('Erreur ajout : ${response.body}');
       }
@@ -42,36 +46,47 @@ class PoubellesService {
     }
   }
 
-  // 🛠️ Mettre à jour une poubelle
-  Future<void> updatePoubelle({
-    required String id,
-    required double latitude,
-    required double longitude,
-    required String adresse,
-  }) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/poubelles/$id'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'latitude': latitude,
-          'longitude': longitude,
-          'adresse': adresse,
-        }),
-      );
 
-      if (response.statusCode != 200) {
-        throw Exception('Erreur mise à jour : ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Erreur lors de la mise à jour de la poubelle : $e');
-    }
+  // 🛠️ Mettre à jour une poubelle
+ Future<void> updatePoubelle({
+  required String id,
+  required double latitude,
+  required double longitude,
+  required String adresse,
+  String? site,
+}) async {
+  final body = {
+    'latitude': latitude,
+    'longitude': longitude,
+    'adresse': adresse,
+  };
+
+
+  if (site != null) {
+    body['site'] = site;
   }
+
+
+  final response = await http.put(
+    Uri.parse('$baseUrl/poubelles/$id'),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode(body),
+  );
+
+
+  if (response.statusCode != 200) {
+    throw Exception('Erreur mise à jour : ${response.body}');
+  }
+}
+
+
+
 
   // ❌ Supprimer une poubelle
   Future<void> deletePoubelle(String id) async {
     try {
       final response = await http.delete(Uri.parse('$baseUrl/poubelles/$id'));
+
 
       if (response.statusCode != 200) {
         throw Exception('Erreur suppression : ${response.body}');
@@ -80,6 +95,7 @@ class PoubellesService {
       throw Exception('Erreur lors de la suppression de la poubelle : $e');
     }
   }
+
 
   // 🔄 Mettre à jour uniquement le statut "pleine"
   Future<void> updatePleineStatus(String id, bool pleine) async {
@@ -90,6 +106,7 @@ class PoubellesService {
         body: json.encode({'id': id, 'pleine': pleine}),
       );
 
+
       if (response.statusCode != 200) {
         throw Exception('Erreur statut pleine : ${response.body}');
       }
@@ -98,3 +115,6 @@ class PoubellesService {
     }
   }
 }
+
+
+

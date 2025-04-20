@@ -17,40 +17,72 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
-  String _selectedRole = 'user';
+  String _selectedRole = 'agent';
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool _isValidPassword(String password) {
+    // Minimum 6 caractères, au moins une lettre et un chiffre
+    final passwordRegex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$');
+    return passwordRegex.hasMatch(password);
+  }
 
   Future<void> _register() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      if (!mounted) return;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (!_isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Les mots de passe ne correspondent pas')),
+        const SnackBar(content: Text('Email invalide'),backgroundColor: Colors.red,),
+      );
+      return;
+    }
+
+    if (!_isValidPassword(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mot de passe invalide. Il doit contenir au moins 6 caractères, une lettre et un chiffre.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Les mots de passe ne correspondent pas'),backgroundColor: Colors.red,),
       );
       return;
     }
 
     setState(() => _isLoading = true);
+
     try {
       final auth = Provider.of<AuthService>(context, listen: false);
+
       final result = await auth.register(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
+        email,
+        password,
         _selectedRole,
       );
 
+      final registeredRole = result['role'];
+
       if (!mounted) return;
-      
-      // Redirection forcée avec vérification du contexte
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => _getDashboardForRole(_selectedRole)),
+          MaterialPageRoute(builder: (_) => _getDashboardForRole(registeredRole)),
           (route) => false,
         );
       });
-
     } catch (e) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
+        SnackBar(content: Text('Erreur : ${e.toString()}'),backgroundColor: Colors.red,),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -59,9 +91,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _getDashboardForRole(String role) {
     switch (role) {
-      case 'admin': return const AdminDashboardScreen();
-      case 'collector': return const CollectorDashboardScreen();
-      default: return const UserDashboardScreen();
+      case 'admin':
+        return const AdminDashboardScreen();
+      case 'chauffeur':
+        return const CollectorDashboardScreen();
+      case 'agent':
+      default:
+        return const UserDashboardScreen();
     }
   }
 
@@ -112,16 +148,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 value: _selectedRole,
                 items: const [
                   DropdownMenuItem(
-                    value: 'user',
-                    child: Text('Utilisateur standard'),
+                    value: 'agent',
+                    child: Text('Agent'),
                   ),
                   DropdownMenuItem(
-                    value: 'admin',
-                    child: Text('Administrateur'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'collector',
-                    child: Text('Collecteur'),
+                    value: 'chauffeur',
+                    child: Text('Chauffeur'),
                   ),
                 ],
                 onChanged: (value) => setState(() => _selectedRole = value!),

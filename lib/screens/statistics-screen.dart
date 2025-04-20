@@ -19,6 +19,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   int poubellesPleines = 0;
   int poubellesVides = 0;
   bool isLoading = true;
+  String? errorMessage;
   Map<String, int> roleCounts = {};
 
   @override
@@ -33,7 +34,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       final roleData = await _statisticsService.getUserCountsByRoles();
       final totalPoubellesCount = await _statisticsService.getTotalPoubelles();
       final poubelleData = await _statisticsService.getPoubellesStatus();
-
+      print(userCount);
+      print(roleData);
+      print(totalPoubelles);
+      print(poubelleData);
       setState(() {
         totalUtilisateurs = userCount;
         roleCounts = roleData;
@@ -41,52 +45,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         poubellesPleines = poubelleData['plein'] ?? 0;
         poubellesVides = poubelleData['vide'] ?? 0;
         isLoading = false;
+        errorMessage = null;
       });
     } catch (e) {
       print('Erreur lors de la récupération des statistiques : $e');
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Échec de chargement des statistiques. Veuillez réessayer.';
+      });
     }
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 25, color: color),
-                const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildChartsLayout(double width) {
-    const double breakpoint = 600.0; // Définir un seuil pour le responsive
+    const double breakpoint = 600.0;
     const double chartHeight = 200.0;
 
     if (width >= breakpoint) {
-      // Affichage côte à côte
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -127,7 +101,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ],
       );
     } else {
-      // Affichage empilé verticalement
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -165,50 +138,106 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       drawer: const AdminMenuDrawer(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Statistiques globales',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildStatCard(
-                        icon: Icons.people,
-                        title: 'Utilisateurs',
-                        value: '$totalUtilisateurs',
-                        color: Colors.blue,
-                      ),
-                      _buildStatCard(
-                        icon: Icons.delete,
-                        title: 'Poubelles',
-                        value: '$totalPoubelles',
-                        color: Colors.orange,
-                      ),
-                      _buildStatCard(
-                        icon: Icons.warning,
-                        title: 'Poubelles pleines',
-                        value: '$poubellesPleines',
-                        color: Colors.red,
-                      ),
-                      _buildStatCard(
-                        icon: Icons.check_circle,
-                        title: 'Poubelles vides',
-                        value: '$poubellesVides',
-                        color: Colors.green,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildChartsLayout(constraints.maxWidth),
-                    ],
+          : errorMessage != null
+              ? Center(
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
-                );
-              },
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Statistiques globales',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          StatCard(
+                            icon: Icons.people,
+                            title: 'Utilisateurs',
+                            value: '$totalUtilisateurs',
+                            color: Colors.blue,
+                          ),
+                          StatCard(
+                            icon: Icons.delete,
+                            title: 'Poubelles',
+                            value: '$totalPoubelles',
+                            color: Colors.orange,
+                          ),
+                          StatCard(
+                            icon: Icons.warning,
+                            title: 'Poubelles pleines',
+                            value: '$poubellesPleines',
+                            color: Colors.red,
+                          ),
+                          StatCard(
+                            icon: Icons.check_circle,
+                            title: 'Poubelles vides',
+                            value: '$poubellesVides',
+                            color: Colors.green,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildChartsLayout(constraints.maxWidth),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}
+
+class StatCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final Color color;
+
+  const StatCard({
+    Key? key,
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Tooltip(
+                  message: title,
+                  child: Icon(icon, size: 25, color: color),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

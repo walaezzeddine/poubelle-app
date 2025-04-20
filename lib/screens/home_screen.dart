@@ -8,7 +8,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    
+    final userEmail = authService.currentUser?.email ?? 'Inconnu';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Accueil'),
@@ -28,7 +29,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             const Text('Bienvenue dans l\'application Poubelle !'),
             const SizedBox(height: 20),
-            Text('Connecté en tant que: ${authService.currentUser?.email}'),
+            Text('Connecté en tant que: ${userEmail}'),
           ],
         ),
       ),

@@ -1,13 +1,89 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
-import 'package:provider/provider.dart';
-import '../../services/auth_service.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatelessWidget {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  
-  bool? get mounted => null;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Fonction pour valider l'email
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    return emailRegex.hasMatch(email);
+  }
+
+  // Fonction pour valider le mot de passe
+  bool _isValidPassword(String password) {
+    return password.length >= 6;
+  }
+
+  Future<void> _login(BuildContext context) async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Validation avant envoi
+    if (!_isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Veuillez entrer une adresse e-mail valide."),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!_isValidPassword(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Le mot de passe doit contenir au moins 6 caractères."),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/api/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final role = data['role'];
+
+        switch (role) {
+          case 'admin':
+            Navigator.pushReplacementNamed(context, '/admin');
+            break;
+          case 'chauffeur':
+            Navigator.pushReplacementNamed(context, '/collector');
+            break;
+          default:
+            Navigator.pushReplacementNamed(context, '/user');
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Utilisateur inexistant, veuillez vous inscrire !"),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur: ${e.toString()}"),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +94,6 @@ class LoginScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 60),
-            // Titre centré et vert
             const Center(
               child: Text(
                 'Poubelle',
@@ -32,13 +107,9 @@ class LoginScreen extends StatelessWidget {
             const SizedBox(height: 40),
             const Text(
               'Bienvenue',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 30),
-            // Champ Email
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(
@@ -49,7 +120,6 @@ class LoginScreen extends StatelessWidget {
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 20),
-            // Champ Mot de passe
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(
@@ -60,7 +130,6 @@ class LoginScreen extends StatelessWidget {
               obscureText: true,
             ),
             const SizedBox(height: 10),
-            // Mot de passe oublié
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -75,7 +144,6 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const Divider(height: 40),
-            // Bouton de connexion
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -98,7 +166,6 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Lien vers inscription
             Center(
               child: TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/register'),
@@ -123,34 +190,4 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
-Future<void> _login(BuildContext context) async {
-  try {
-    final auth = Provider.of<AuthService>(context, listen: false);
-    final result = await auth.signInWithRole(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-
-    final role = result['role'] as String;
-    
-    switch (role) {
-      case 'admin':
-        Navigator.pushReplacementNamed(context, '/admin');
-        break;
-      case 'chauffeur':
-        Navigator.pushReplacementNamed(context, '/collector');
-        break;
-      default:
-        Navigator.pushReplacementNamed(context, '/user');
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Erreur: ${e.toString()}"),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-}
 }

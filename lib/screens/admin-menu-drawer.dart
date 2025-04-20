@@ -10,6 +10,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AdminMenuDrawer extends StatelessWidget {
   const AdminMenuDrawer({super.key});
 
+  void _checkAuthAndNavigate(BuildContext context, String routeName) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      Navigator.pushNamed(context, routeName);
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -32,38 +41,17 @@ class AdminMenuDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Gérer les utilisateurs'),
-            onTap: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                Navigator.pushNamed(context, '/manage-users');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
-            },
+            onTap: () => _checkAuthAndNavigate(context, '/manage-users'),
           ),
           ListTile(
-            leading: const Icon(Icons.person),
+            leading: const Icon(Icons.location_city),
             title: const Text('Gérer les sites'),
-            onTap: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                Navigator.pushNamed(context, '/manage-sites');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
-            },
+            onTap: () => _checkAuthAndNavigate(context, '/manage-sites'),
           ),
           ListTile(
             leading: const Icon(Icons.analytics),
             title: const Text('Statistiques'),
-            onTap: () {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                Navigator.pushNamed(context, '/statistics');
-              } else {
-                Navigator.pushNamed(context, '/login');
-              }
-            },
+            onTap: () => _checkAuthAndNavigate(context, '/statistics'),
           ),
           const Divider(),
           ListTile(
