@@ -3,6 +3,9 @@ import '../../services/statistics_services.dart';
 import '../../widgets/poubelles_pie_chart.dart';
 import '../../widgets/users_bar_chart.dart';
 import '../screens/admin-menu-drawer.dart';
+import 'package:provider/provider.dart';
+import '../../services/auth_service.dart';
+import '../screens/auth/login_screen.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -34,10 +37,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       final roleData = await _statisticsService.getUserCountsByRoles();
       final totalPoubellesCount = await _statisticsService.getTotalPoubelles();
       final poubelleData = await _statisticsService.getPoubellesStatus();
-      print(userCount);
-      print(roleData);
-      print(totalPoubelles);
-      print(poubelleData);
       setState(() {
         totalUtilisateurs = userCount;
         roleCounts = roleData;
@@ -134,7 +133,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistiques')),
+      appBar: AppBar(
+        title: const Text('Statistiques'),
+        actions: [
+              IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                await Provider.of<AuthService>(context, listen: false).signOut();
+                Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                (route) => false, // Supprime toutes les routes précédentes
+              );
+              },
+            )]
+          ),
       drawer: const AdminMenuDrawer(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

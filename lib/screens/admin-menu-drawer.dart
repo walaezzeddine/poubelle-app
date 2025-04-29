@@ -10,14 +10,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AdminMenuDrawer extends StatelessWidget {
   const AdminMenuDrawer({super.key});
 
-  void _checkAuthAndNavigate(BuildContext context, String routeName) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      Navigator.pushNamed(context, routeName);
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
+void _checkAuthAndNavigate(BuildContext context, String routeName) {
+  final authService = Provider.of<AuthService>(context, listen: false);
+  final isLoggedIn = authService.isLoggedIn();
+
+  if (isLoggedIn) {
+    Navigator.pushNamed(context, routeName);
+  } else {
+    Navigator.pushReplacementNamed(context, '/login');
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,11 @@ class AdminMenuDrawer extends StatelessWidget {
             leading: const Icon(Icons.location_city),
             title: const Text('Gérer les sites'),
             onTap: () => _checkAuthAndNavigate(context, '/manage-sites'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Gérer les poubelles'),
+            onTap: () => _checkAuthAndNavigate(context, '/manage-poubelles'),
           ),
           ListTile(
             leading: const Icon(Icons.analytics),

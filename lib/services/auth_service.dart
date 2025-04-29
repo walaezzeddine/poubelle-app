@@ -1,11 +1,60 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
-class AuthService {
-  final String baseUrl =  "http://localhost:3000"; 
+class AuthService with ChangeNotifier {
+  final String baseUrl = "http://localhost:3000"; 
   User? get currentUser => _firebaseAuth.currentUser;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  bool isLoggedIn() {
+    return _isAuthenticated;
+  }
+
+  String? _role = ''; // Nullable field
+
+  // Getter for _role
+  String? get role => _role;
+
+  // Setter for _role
+  set role(String? newRole) {
+    _role = newRole;
+    notifyListeners();  // Notify listeners when _role changes
+  }
+
+  bool _isAuthenticated = false;
+
+  bool get isAuthenticated => _isAuthenticated;
+
+  set isAuthenticated(bool status) {
+    _isAuthenticated = status;
+    notifyListeners();
+  }
+
+  void setAuthenticated(bool value) {
+    _isAuthenticated = value;
+    notifyListeners();
+  }
+
+  // Other methods like register, login, etc.
+  
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/auth/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      _role = data['role']; // Assuming the role is part of the user data
+      return data;
+    } else {
+      throw Exception(jsonDecode(response.body)['error'] ?? 'Erreur lors de la connexion');
+    }
+  }
+
 
   Future<Map<String, dynamic>> register(String email, String password, String role) async {
     final response = await http.post(
@@ -30,20 +79,6 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception(jsonDecode(response.body)['error'] ?? 'Erreur lors de la connexion');
-    }
-  }
-
   Future<void> resetPassword(String email) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auth/reset-password'),
@@ -63,7 +98,9 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      _role = data['role']; // Assuming the role is part of the user data
+      return data;
     } else {
       throw Exception(jsonDecode(response.body)['error'] ?? 'Erreur lors de la récupération');
     }
@@ -73,7 +110,9 @@ class AuthService {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auth/logout'),
     );
-
+    _isAuthenticated = false;
+    _role = null; // Reset role on logout
+    notifyListeners();
     if (response.statusCode != 200) {
       throw Exception('Erreur lors de la déconnexion');
     }

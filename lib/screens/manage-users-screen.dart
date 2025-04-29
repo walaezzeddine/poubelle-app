@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/users_service.dart';
 import '../../screens/admin-menu-drawer.dart';
+import 'package:provider/provider.dart';
+import '../../services/auth_service.dart';
+import '../screens/auth/login_screen.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -153,7 +156,21 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gérer les utilisateurs')),
+      appBar: AppBar(
+        title: const Text('Gérer les utilisateurs'),
+        actions: [
+            IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await Provider.of<AuthService>(context, listen: false).signOut();
+              Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+              (route) => false, // Supprime toutes les routes précédentes
+            );
+            },
+          )]
+        ),
       drawer: const AdminMenuDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -201,7 +218,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit, color: Color.fromARGB(255, 229, 131, 31)),
+                            icon: const Icon(Icons.edit, color: const Color.fromARGB(255, 2, 58, 122)),
                             onPressed: () => _showUserDialog(user: user),
                           ),
                           IconButton(

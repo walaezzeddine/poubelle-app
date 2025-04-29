@@ -30,7 +30,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<AuthService>(create: (_) => AuthService()),
+        // Utiliser ChangeNotifierProvider au lieu de Provider
+        ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
       ],
       child: MaterialApp(
         title: 'Poubelle App',
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => const HomeScreen(),
           '/admin': (_) => const AdminDashboardScreen(),
           '/collector': (_) => const CollectorDashboardScreen(),
-         '/user': (_) => const UserDashboardScreen(),
+          '/user': (_) => const UserDashboardScreen(),
           '/reset-password': (context) => const PasswordResetScreen(),
           '/manage-users': (context) => ManageUsersScreen(),
           '/manage-sites': (context) => ManageSitesScreen(),

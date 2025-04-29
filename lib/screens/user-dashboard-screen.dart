@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import 'package:poubelle/screens/user-menu-drawer.dart';
-
+import '../screens/auth/login_screen.dart';
 
 class UserDashboardScreen extends StatelessWidget {
   const UserDashboardScreen({super.key});
@@ -18,12 +18,15 @@ class UserDashboardScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await Provider.of<AuthService>(context, listen: false).signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+              (route) => false, // Supprime toutes les routes précédentes
+            );
             },
           ),
         ],
       ),
-      drawer: const UserMenuDrawer(), // ← utilise le menu ici
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

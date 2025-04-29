@@ -19,7 +19,7 @@ class SitesService {
     }
   }
 
-Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
+Future<void> addSite(int codeP, int nbPoubelles, String nom, String chauffeurID) async {
   try {
 
     final response = await http.post(
@@ -29,6 +29,7 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
         'codeP': codeP,
         'nbPoubelles': nbPoubelles,
         'nom': nom,
+        'chauffeurID' : chauffeurID,
       }),
     );
 
@@ -43,8 +44,9 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
 }
 
   // Modifier un site
-  Future<void> updateSite(String id, int codeP, int nbPoubelles, String nom) async {
+  Future<void> updateSite(String id, int codeP, int nbPoubelles, String nom, String chauffeurID) async {
     try {
+      print(chauffeurID);
       final response = await http.put(
         Uri.parse('$baseUrl/api/site/sites/$id'),
         headers: {'Content-Type': 'application/json'},
@@ -52,6 +54,7 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
           'codeP': codeP,
           'nbPoubelles': nbPoubelles,
           'nom': nom,
+          'chauffeurID' : chauffeurID,
         }),
       );
       if (response.statusCode != 200) {
@@ -74,6 +77,21 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
     }
   }
 
+  // Récupérer un utilisateur par chauffeurID
+  Future<Map<String, dynamic>> getUserByChauffeurID(String chauffeurID) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/site/sites/chauffeur/$chauffeurID'));
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Erreur lors de la récupération du chauffeur : ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération du chauffeur : $e');
+    }
+  }
+
   // Recherche partielle
   Future<List<Map<String, dynamic>>> searchSitePartial({int? codeP, String? nom}) async {
     try {
@@ -89,4 +107,20 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom) async {
       throw Exception('Erreur lors de la recherche partielle : $e');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getUsers(String role) async {
+    final response = await http.get(Uri.parse('$baseUrl/api/site/sites/users/$role'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((user) => user as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Erreur lors de la récupération des utilisateurs');
+    }
+  }
+
+
 }
+
+
+  

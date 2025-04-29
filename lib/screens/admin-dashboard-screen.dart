@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import 'admin-menu-drawer.dart'; // ← importe ton menu réutilisable
+import '../screens/auth/login_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -16,7 +17,11 @@ class AdminDashboardScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await Provider.of<AuthService>(context, listen: false).signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+              (route) => false, // Supprime toutes les routes précédentes
+            );
             },
           ),
         ],

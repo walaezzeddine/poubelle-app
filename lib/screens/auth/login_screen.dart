@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:poubelle/services/auth_service.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -21,7 +23,7 @@ class LoginScreen extends StatelessWidget {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    // Validation avant envoi
+    // Validation before sending
     if (!_isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -47,23 +49,28 @@ class LoginScreen extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:3000/api/auth/login'),
+        //Uri.parse('http://192.168.56.1:3000/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final role = data['role'];
 
-        switch (role) {
+        // Update role in AuthService based on response
+        Provider.of<AuthService>(context, listen: false).setAuthenticated(true);
+        Provider.of<AuthService>(context, listen: false).role = data['role'];  // Update the role
+
+        // Navigate based on role
+        switch (data['role']) {
           case 'admin':
-            Navigator.pushReplacementNamed(context, '/admin');
+            Navigator.pushReplacementNamed(context, '/statistics');
             break;
           case 'chauffeur':
             Navigator.pushReplacementNamed(context, '/collector');
             break;
           default:
-            Navigator.pushReplacementNamed(context, '/user');
+            Navigator.pushReplacementNamed(context, '/manage-poubelles');
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
