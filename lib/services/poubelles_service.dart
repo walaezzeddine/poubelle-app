@@ -114,6 +114,18 @@ class PoubellesService {
       throw Exception('Erreur lors de la mise à jour du statut pleine : $e');
     }
   }
+
+  // 📦 Récupérer les poubelles pleines
+  Future<List<Map<String, dynamic>>> getPoubellesPleine() async {
+    try {
+      final poubelles = await getPoubelles();
+      return poubelles.where((poubelle) => poubelle['pleine'] == true).toList();
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des poubelles pleines : $e');
+    }
+  }
+
+
 }
 
 

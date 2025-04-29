@@ -1,4 +1,5 @@
 
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,13 +8,22 @@ import 'package:http/http.dart' as http;
 import 'package:poubelle/services/poubelles_service.dart';
 import 'package:poubelle/services/sites_services.dart';
 import 'package:flutter/services.dart';
+import '../../services/location_service.dart';
+
+
+
+
 
 
 class ContainerCreationPage extends StatefulWidget {
   final Map<String, dynamic>? poubelle;
 
 
+
+
   ContainerCreationPage({this.poubelle});
+
+
 
 
   @override
@@ -21,15 +31,26 @@ class ContainerCreationPage extends StatefulWidget {
 }
 
 
+
+
 class _ContainerCreationPageState extends State<ContainerCreationPage> {
   final SitesService _siteService = SitesService();
   final PoubellesService _poubelleService = PoubellesService();
 
 
+
+
   LatLng _initialPosition = LatLng(36.4549, 10.7252);
   LatLng _selectedPosition = LatLng(36.4549, 10.7252);
+  final LocationService _locationService = LocationService();  // Instance du service de localisation
+
+
   List<String> _sites = [];
   String? _selectedSite;
+
+
+
+
 
 
 
@@ -40,10 +61,15 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
   bool adresseInvalide = false;
 
 
+
+
   @override
   void initState() {
     super.initState();
     _loadSites();
+    _getCurrentLocation();  // Appeler la méthode pour obtenir la position actuelle
+
+
 
 
     if (widget.poubelle != null) {
@@ -59,12 +85,31 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
   }
 
 
+ 
+
+
+  // Fonction pour obtenir la position actuelle
+  Future<void> _getCurrentLocation() async {
+    LatLng? currentPosition = await _locationService.getCurrentLocation(); // Utiliser le service de localisation
+    if (currentPosition != null) {
+      setState(() {
+        _initialPosition = currentPosition;
+        _selectedPosition = currentPosition;
+      });
+    }
+  }
+
+
+
+
   Future<void> _loadSites() async {
     final sites = await _siteService.getSites();
     setState(() {
       _sites = _getDistinctSite(sites);
     });
   }
+
+
 
 
   List<String> _getDistinctSite(List<Map<String, dynamic>> sites) {
@@ -76,6 +121,8 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
   }
 
 
+
+
   void changeADR(LatLng position) async {
     try {
       final url = Uri.parse(
@@ -83,9 +130,13 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
       );
 
 
+
+
       final response = await http.get(url, headers: {
         'User-Agent': 'FlutterApp/1.0 (contact@example.com)',
       });
+
+
 
 
       if (response.statusCode == 200) {
@@ -101,11 +152,17 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
   }
 
 
+
+
 Future<void> _geocodeAddress(String address) async {
     final query = Uri.encodeFull(address);
-    final url = Uri.parse(
-      'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1',
-    );
+   final url = Uri.parse(
+  'https://corsproxy.io/?https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1',
+);
+
+
+
+
 
 
     try {
@@ -114,11 +171,15 @@ Future<void> _geocodeAddress(String address) async {
       });
 
 
+
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data.isNotEmpty) {
           final lat = double.tryParse(data[0]['lat']);
           final lon = double.tryParse(data[0]['lon']);
+
+
 
 
           if (lat != null && lon != null) {
@@ -134,9 +195,17 @@ Future<void> _geocodeAddress(String address) async {
       }
 
 
+
+
   setState(() {
   adresseInvalide =true;
 });
+
+
+
+
+
+
 
 
 
@@ -151,12 +220,18 @@ Future<void> _geocodeAddress(String address) async {
 
 
 
+
+
+
+
   void _onMapTap(LatLng position) async {
     _latController.text = position.latitude.toString();
     _lngController.text = position.longitude.toString();
     changeADR(position);
     _updateMarker();
   }
+
+
 
 
   void _updateMarker() {
@@ -170,6 +245,8 @@ Future<void> _geocodeAddress(String address) async {
   }
 
 
+
+
   void _updateFromInput() {
     double? lat = double.tryParse(_latController.text);
     double? lng = double.tryParse(_lngController.text);
@@ -181,6 +258,8 @@ Future<void> _geocodeAddress(String address) async {
   }
 
 
+
+
   void _onSubmitPressed() async {
   final lat = double.tryParse(_latController.text);
   final lng = double.tryParse(_lngController.text);
@@ -188,6 +267,8 @@ Future<void> _geocodeAddress(String address) async {
   setState(() {
   _addressController.text = adresseInvalide ? "Adresse introuvable" : _addressController.text;
 });
+
+
 
 
   if (lat == null || lng == null || _selectedSite == null || adresse.isEmpty) {
@@ -208,6 +289,8 @@ Future<void> _geocodeAddress(String address) async {
     );
     return;
   }
+
+
 
 
   try {
@@ -240,6 +323,8 @@ Future<void> _geocodeAddress(String address) async {
     }
 
 
+
+
     // Attendre un court instant pour afficher le snackbar avant de revenir
     await Future.delayed(Duration(milliseconds: 800));
     Navigator.pop(context);
@@ -253,6 +338,10 @@ Future<void> _geocodeAddress(String address) async {
     print('Erreur: $e');
   }
 }
+
+
+
+
 
 
 
@@ -304,6 +393,7 @@ Future<void> _geocodeAddress(String address) async {
               },
             ),
             TextField(
+              readOnly: true,
               controller: _addressController,
               decoration: InputDecoration(labelText: "Adresse"),
               onChanged: (value) {
@@ -316,36 +406,38 @@ Future<void> _geocodeAddress(String address) async {
             SizedBox(
               height: 250,
               child: FlutterMap(
-                options: MapOptions(
-                  center: _selectedPosition,
-                  zoom: 14,
-                  onTap: (tapPosition, point) {
-                    _onMapTap(point);
-                  },
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _selectedPosition,
-                        width: 40,
-                        height: 40,
-                        child: Icon(
-                          Icons.location_pin,
-                          color: Colors.red,
-                          size: 40,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+  options: MapOptions(
+    center: _selectedPosition,
+    zoom: 14,
+    onTap: (tapPosition, point) {
+      _onMapTap(point);
+    },
+  ),
+  children: [
+    TileLayer(
+      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      subdomains: ['a', 'b', 'c'],
+    ),
+    MarkerLayer(
+      markers: [
+        Marker(
+          point: _selectedPosition,
+          width: 40,
+          height: 40,
+          child: Icon(
+            Icons.location_pin,
+            color: Colors.red,
+            size: 40,
+          ),
+        ),
+      ],
+    ),
+  ],
+),
+
+
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: _onSubmitPressed,
               child: Text(widget.poubelle != null ? "Modifier" : "Créer"),
@@ -356,6 +448,3 @@ Future<void> _geocodeAddress(String address) async {
     );
   }
 }
-
-
-
