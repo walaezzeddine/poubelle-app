@@ -19,7 +19,7 @@ class ManagePoubellesScreen extends StatefulWidget {
 class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
   final PoubellesService _poubelleService = PoubellesService();
   List<Map<String, dynamic>> _poubelles = [];
-  String _searchSite = '';
+  String _searchSecteur = '';
   String _filtrePleine = 'Tous'; // Ajout du filtre
   final AlertesService _alertesService = AlertesService();
 
@@ -38,13 +38,13 @@ class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
 
   List<Map<String, dynamic>> _filterPoubelles() {
     return _poubelles.where((poubelle) {
-      final siteMatch = poubelle['site'].toLowerCase().contains(_searchSite.toLowerCase());
+      final secteurMatch = poubelle['secteur'].toLowerCase().contains(_searchSecteur.toLowerCase());
       final estPleine = poubelle['pleine'] == true;
 
       if (_filtrePleine == 'Pleine' && !estPleine) return false;
       if (_filtrePleine == 'Non pleine' && estPleine) return false;
 
-      return siteMatch;
+      return secteurMatch;
     }).toList();
   }
 
@@ -75,6 +75,28 @@ class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
     _loadPoubelles();
   }
 
+  Future<void> _confirmDelete(String poubelleId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmer la suppression'),
+        content: const Text('Voulez-vous vraiment supprimer cet poubelle ?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Supprimer', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+
+    if (confirm == true) {
+      try {
+        _deletePoubelle(poubelleId);
+      } catch (e) {
+        print('Erreur lors de la suppression de la poubelle : $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,12 +148,12 @@ class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
             padding: const EdgeInsets.all(12),
             child: TextField(
               decoration: InputDecoration(
-                labelText: 'Recherche par site',
+                labelText: 'Recherche par secteur',
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: (value) {
                 setState(() {
-                  _searchSite = value;
+                  _searchSecteur = value;
                 });
               },
             ),
@@ -167,7 +189,7 @@ class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
                 return Card(
                   margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    title: Text('Site: ${poubelle['site']}'),
+                    title: Text('Secteur: ${poubelle['secteur']}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -186,7 +208,7 @@ class _ManagePoubellesScreenState extends State<ManagePoubellesScreen> {
                         ),
                         IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deletePoubelle(poubelle['id']),
+                          onPressed: () => _confirmDelete(poubelle['id']),
                         ),
                       ],
                     ),

@@ -38,7 +38,7 @@ class UserMenuDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text('Gérer les sites'),
+            title: const Text('Gérer les secteurs'),
             onTap: () {
               Navigator.pushNamed(context, '/manage-sites');
             },

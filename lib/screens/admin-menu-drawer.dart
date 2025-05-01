@@ -47,7 +47,7 @@ void _checkAuthAndNavigate(BuildContext context, String routeName) {
           ),
           ListTile(
             leading: const Icon(Icons.location_city),
-            title: const Text('Gérer les sites'),
+            title: const Text('Gérer les secteurs'),
             onTap: () => _checkAuthAndNavigate(context, '/manage-sites'),
           ),
           ListTile(

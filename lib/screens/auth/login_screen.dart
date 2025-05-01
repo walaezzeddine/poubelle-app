@@ -5,13 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:poubelle/services/auth_service.dart';
 
 class LoginScreen extends StatelessWidget {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _cinController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Fonction pour valider l'email
-  bool _isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    return emailRegex.hasMatch(email);
+  // Fonction pour valider le cin
+  bool _isValidCin(String cin) {
+    final cinRegex = RegExp(r'^\d{8}$'); // exactement 8 chiffres
+    return cinRegex.hasMatch(cin);
   }
 
   // Fonction pour valider le mot de passe
@@ -20,14 +20,14 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<void> _login(BuildContext context) async {
-    final email = _emailController.text.trim();
+    final cin = _cinController.text.trim();
     final password = _passwordController.text.trim();
 
     // Validation before sending
-    if (!_isValidEmail(email)) {
+    if (!_isValidCin(cin)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Veuillez entrer une adresse e-mail valide."),
+          content: Text("Le CIN doit contenir exactement 8 chiffres."),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.red,
         ),
@@ -51,7 +51,7 @@ class LoginScreen extends StatelessWidget {
         Uri.parse('http://localhost:3000/api/auth/login'),
         //Uri.parse('http://192.168.56.1:3000/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({'cin': cin, 'password': password}),
       );
 
       if (response.statusCode == 200) {
@@ -69,8 +69,11 @@ class LoginScreen extends StatelessWidget {
           case 'chauffeur':
             Navigator.pushReplacementNamed(context, '/collector');
             break;
-          default:
+          case 'agent':
             Navigator.pushReplacementNamed(context, '/manage-poubelles');
+            break;
+          default:
+            Navigator.pushReplacementNamed(context, '/collector');
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -118,13 +121,13 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             TextField(
-              controller: _emailController,
+              controller: _cinController,
               decoration: const InputDecoration(
-                labelText: 'Email',
+                labelText: 'Cin',
                 border: UnderlineInputBorder(),
                 prefixIcon: Icon(Icons.email),
               ),
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
             TextField(

@@ -4,26 +4,26 @@ import 'package:http/http.dart' as http;
 class SitesService {
   final String baseUrl = "http://localhost:3000"; // Remplace par ton URL/port backend
 
-  // Récupérer les sites
-  Future<List<Map<String, dynamic>>> getSites() async {
+  // Récupérer les secteurs
+  Future<List<Map<String, dynamic>>> getSecteurs() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/site/sites'));
+      final response = await http.get(Uri.parse('$baseUrl/api/secteur/secteurs'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.cast<Map<String, dynamic>>();
       } else {
-        throw Exception('Erreur lors de la récupération des sites : ${response.statusCode}');
+        throw Exception('Erreur lors de la récupération des secteurs : ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Erreur lors de la récupération des sites : $e');
+      throw Exception('Erreur lors de la récupération des secteurs : $e');
     }
   }
 
-Future<void> addSite(int codeP, int nbPoubelles, String nom, String chauffeurID) async {
+Future<void> addSecteur(int codeP, int nbPoubelles, String nom, String chauffeurID) async {
   try {
 
     final response = await http.post(
-      Uri.parse('$baseUrl/api/site/sites'),
+      Uri.parse('$baseUrl/api/secteur/secteurs'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'codeP': codeP,
@@ -38,17 +38,16 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom, String chauffeurID)
     }
 
   } catch (e) {
-    print('Erreur capturée dans addSite: $e');
+    print('Erreur capturée dans addSecteur: $e');
     rethrow; // Rejette vers la UI qui peut alors afficher une alerte propre
   }
 }
 
-  // Modifier un site
-  Future<void> updateSite(String id, int codeP, int nbPoubelles, String nom, String chauffeurID) async {
+  // Modifier un secteur
+  Future<void> updateSecteur(String id, int codeP, int nbPoubelles, String nom, String chauffeurID) async {
     try {
-      print(chauffeurID);
       final response = await http.put(
-        Uri.parse('$baseUrl/api/site/sites/$id'),
+        Uri.parse('$baseUrl/api/secteur/secteurs/$id'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'codeP': codeP,
@@ -58,29 +57,29 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom, String chauffeurID)
         }),
       );
       if (response.statusCode != 200) {
-        throw Exception('Erreur lors de la mise à jour du site : ${response.statusCode}');
+        throw Exception('Erreur lors de la mise à jour du secteur : ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Erreur lors de la mise à jour du site : $e');
+      throw Exception('Erreur lors de la mise à jour du secteur : $e');
     }
   }
 
-  // Supprimer un site
-  Future<void> deleteSite(String id) async {
+  // Supprimer un secteur
+  Future<void> deleteSecteur(String id) async {
     try {
-      final response = await http.delete(Uri.parse('$baseUrl/api/site/sites/$id'));
+      final response = await http.delete(Uri.parse('$baseUrl/api/secteur/secteurs/$id'));
       if (response.statusCode != 200) {
-        throw Exception('Erreur lors de la suppression du site : ${response.statusCode}');
+        throw Exception('Erreur lors de la suppression du secteur : ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Erreur lors de la suppression du site : $e');
+      throw Exception('Erreur lors de la suppression du secteur : $e');
     }
   }
 
   // Récupérer un utilisateur par chauffeurID
   Future<Map<String, dynamic>> getUserByChauffeurID(String chauffeurID) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/site/sites/chauffeur/$chauffeurID'));
+      final response = await http.get(Uri.parse('$baseUrl/api/secteur/secteurs/chauffeur/$chauffeurID'));
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -93,9 +92,9 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom, String chauffeurID)
   }
 
   // Recherche partielle
-  Future<List<Map<String, dynamic>>> searchSitePartial({int? codeP, String? nom}) async {
+  Future<List<Map<String, dynamic>>> searchSecteurPartial({int? codeP, String? nom}) async {
     try {
-      final uri = Uri.parse('$baseUrl/api/site/sites/search?codeP=$codeP&nom=$nom');
+      final uri = Uri.parse('$baseUrl/api/secteur/secteurs/search?codeP=$codeP&nom=$nom');
       final response = await http.get(uri);
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -109,7 +108,7 @@ Future<void> addSite(int codeP, int nbPoubelles, String nom, String chauffeurID)
   }
 
   Future<List<Map<String, dynamic>>> getUsers(String role) async {
-    final response = await http.get(Uri.parse('$baseUrl/api/site/sites/users/$role'));
+    final response = await http.get(Uri.parse('$baseUrl/api/secteur/secteurs/users/$role'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);

@@ -39,11 +39,11 @@ class AuthService with ChangeNotifier {
 
   // Other methods like register, login, etc.
   
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String cin, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+      body: jsonEncode({'cin': cin, 'password': password}),
     );
 
     if (response.statusCode == 200) {
@@ -56,14 +56,16 @@ class AuthService with ChangeNotifier {
   }
 
 
-  Future<Map<String, dynamic>> register(String email, String password, String role) async {
+  Future<Map<String, dynamic>> register(String cin, String password, String role, String nom, String prenom) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auth/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'email': email,
+        'cin': cin,
         'password': password,
         'role': role,
+        'nom': nom,
+        'prenom': prenom,
       }),
     );
 
@@ -71,8 +73,8 @@ class AuthService with ChangeNotifier {
       final data = jsonDecode(response.body);
       return data; // Si l'inscription est réussie, retourne les données.
     } else if (response.statusCode == 400) {
-      // Si l'email est déjà utilisé, retourne un message d'erreur spécifique
-      throw Exception('L\'email est déjà utilisé. Veuillez en choisir un autre.');
+      // Si le cin est déjà utilisé, retourne un message d'erreur spécifique
+      throw Exception('Le CIN est déjà utilisé. Veuillez en choisir un autre.');
     } else {
       // Autres erreurs génériques
       throw Exception('Échec de l\'inscription. Veuillez réessayer.');

@@ -7,7 +7,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import '../services/poubelles_service.dart';
 import '../services/open_route_service.dart'; // Service pour récupérer l'itinéraire précis
-
+import 'package:provider/provider.dart';
+import '../../services/auth_service.dart';
+import '../screens/auth/login_screen.dart';
 
 class CollectorDashboardScreen extends StatefulWidget {
   const CollectorDashboardScreen({Key? key}) : super(key: key);
@@ -126,7 +128,21 @@ class _CollectorDashboardScreenState extends State<CollectorDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Itinéraire de collecte')),
+      appBar: AppBar(title: const Text('Itinéraire de collecte'),
+       actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await Provider.of<AuthService>(context, listen: false).signOut();
+                Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                (route) => false, // Supprime toutes les routes précédentes
+              );
+            },
+          ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _hasError

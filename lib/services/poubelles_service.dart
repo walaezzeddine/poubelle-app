@@ -24,7 +24,7 @@ class PoubellesService {
 
   // ➕ Ajouter une poubelle
   Future<void> addPoubelle(
-      double latitude, double longitude, String adresse, String site) async {
+      double latitude, double longitude, String adresse, String secteur) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/poubelles'),
@@ -33,7 +33,7 @@ class PoubellesService {
           'latitude': latitude,
           'longitude': longitude,
           'adresse': adresse,
-          'site': site,
+          'secteur': secteur,
         }),
       );
 
@@ -53,8 +53,9 @@ class PoubellesService {
   required double latitude,
   required double longitude,
   required String adresse,
-  String? site,
+  String? secteur,
 }) async {
+
   final body = {
     'latitude': latitude,
     'longitude': longitude,
@@ -62,10 +63,9 @@ class PoubellesService {
   };
 
 
-  if (site != null) {
-    body['site'] = site;
+  if (secteur != null) {
+    body['secteur'] = secteur;
   }
-
 
   final response = await http.put(
     Uri.parse('$baseUrl/poubelles/$id'),

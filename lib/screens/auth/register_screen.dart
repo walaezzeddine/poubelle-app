@@ -4,6 +4,7 @@ import 'package:poubelle/screens/collector-dashboard-screen.dart';
 import 'package:poubelle/screens/user-dashboard-screen.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,15 +14,17 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _emailController = TextEditingController();
+  final _cinController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nomController = TextEditingController();
+  final _prenomController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   String _selectedRole = 'agent';
 
-  bool _isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(email);
+  bool _isValidCin(String cin) {
+    final cinRegex = RegExp(r'^\d{8}$'); // exactement 8 chiffres
+    return cinRegex.hasMatch(cin);
   }
 
   bool _isValidPassword(String password) {
@@ -31,13 +34,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    final email = _emailController.text.trim();
+    final nom = _nomController.text.trim();
+    final prenom = _prenomController.text.trim();
+    final cin = _cinController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (!_isValidEmail(email)) {
+    if (!_isValidCin(cin)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email invalide'),backgroundColor: Colors.red,),
+        const SnackBar(content: Text('Cin invalide'),backgroundColor: Colors.red,),
       );
       return;
     }
@@ -65,9 +70,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final auth = Provider.of<AuthService>(context, listen: false);
 
       final result = await auth.register(
-        email,
+        cin,
         password,
         _selectedRole,
+        nom,
+        prenom,
       );
 
       final registeredRole = result['role'];
@@ -106,6 +113,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inscription'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), // Flèche gauche
+          onPressed: () async {
+            await Provider.of<AuthService>(context, listen: false).signOut();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+              (route) => false,
+            );
+          },
+        ),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
@@ -115,9 +133,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             children: [
               TextFormField(
-                controller: _emailController,
+                controller: _nomController,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Nom',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _prenomController,
+                decoration: const InputDecoration(
+                  labelText: 'Prénom',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _cinController,
+                decoration: const InputDecoration(
+                  labelText: 'Cin',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
                 ),

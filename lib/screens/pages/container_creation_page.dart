@@ -34,7 +34,7 @@ class ContainerCreationPage extends StatefulWidget {
 
 
 class _ContainerCreationPageState extends State<ContainerCreationPage> {
-  final SitesService _siteService = SitesService();
+  final SitesService _secteurService = SitesService();
   final PoubellesService _poubelleService = PoubellesService();
 
 
@@ -45,8 +45,8 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
   final LocationService _locationService = LocationService();  // Instance du service de localisation
 
 
-  List<String> _sites = [];
-  String? _selectedSite;
+  List<String> _secteurs = [];
+  String? _selectedSecteur;
 
 
 
@@ -66,7 +66,7 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
   @override
   void initState() {
     super.initState();
-    _loadSites();
+    _loadSecteurs();
     _getCurrentLocation();  // Appeler la méthode pour obtenir la position actuelle
 
 
@@ -76,7 +76,7 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
       _latController.text = widget.poubelle!['latitude'].toString();
       _lngController.text = widget.poubelle!['longitude'].toString();
       _addressController.text = widget.poubelle!['adresse'];
-      _selectedSite = widget.poubelle!['site'];
+      _selectedSecteur = widget.poubelle!['secteur'];
       _selectedPosition = LatLng(
         widget.poubelle!['latitude'],
         widget.poubelle!['longitude'],
@@ -102,22 +102,22 @@ class _ContainerCreationPageState extends State<ContainerCreationPage> {
 
 
 
-  Future<void> _loadSites() async {
-    final sites = await _siteService.getSites();
+  Future<void> _loadSecteurs() async {
+    final secteurs = await _secteurService.getSecteurs();
     setState(() {
-      _sites = _getDistinctSite(sites);
+      _secteurs = _getDistinctSecteur(secteurs);
     });
   }
 
 
 
 
-  List<String> _getDistinctSite(List<Map<String, dynamic>> sites) {
-    Set<String> siteSet = {};
-    for (var site in sites) {
-      siteSet.add(site['nom']);
+  List<String> _getDistinctSecteur(List<Map<String, dynamic>> secteurs) {
+    Set<String> secteurSet = {};
+    for (var secteur in secteurs) {
+      secteurSet.add(secteur['nom']);
     }
-    return siteSet.toList();
+    return secteurSet.toList();
   }
 
 
@@ -271,7 +271,7 @@ Future<void> _geocodeAddress(String address) async {
 
 
 
-  if (lat == null || lng == null || _selectedSite == null || adresse.isEmpty) {
+  if (lat == null || lng == null || _selectedSecteur == null || adresse.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Veuillez remplir tous les champs.'),
@@ -312,7 +312,7 @@ Future<void> _geocodeAddress(String address) async {
         lat,
         lng,
         adresse,
-        _selectedSite!,
+        _selectedSecteur!,
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -355,20 +355,20 @@ Future<void> _geocodeAddress(String address) async {
         child: Column(
           children: [
             DropdownButtonFormField<String>(
-              value: _selectedSite,
-              items: _sites.map((site) {
+              value: _selectedSecteur,
+              items: _secteurs.map((secteur) {
                 return DropdownMenuItem<String>(
-                  value: site,
-                  child: Text(site),
+                  value: secteur,
+                  child: Text(secteur),
                 );
               }).toList(),
-              onChanged: (newsite) {
+              onChanged: (newsecteur) {
                 setState(() {
-                  _selectedSite = newsite;
+                  _selectedSecteur = newsecteur;
                 });
               },
-              decoration: const InputDecoration(labelText: 'Site'),
-              hint: const Text('Sélectionner un site'),
+              decoration: const InputDecoration(labelText: 'Secteur'),
+              hint: const Text('Sélectionner un secteur'),
             ),
             TextField(
               controller: _latController,
