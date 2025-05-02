@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SitesService {
-  final String baseUrl = "http://localhost:3000"; // Remplace par ton URL/port backend
+  final baseUrl = dotenv.env['API_HOST'];
 
   // Récupérer les secteurs
   Future<List<Map<String, dynamic>>> getSecteurs() async {

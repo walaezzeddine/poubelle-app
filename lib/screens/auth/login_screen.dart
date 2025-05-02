@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:poubelle/services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatelessWidget {
+  final baseUrl = dotenv.env['API_HOST'];
   final TextEditingController _cinController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -47,8 +49,9 @@ class LoginScreen extends StatelessWidget {
     }
 
     try {
+      print(baseUrl);
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/auth/login'),
+         Uri.parse('$baseUrl/api/auth/login'),
         //Uri.parse('http://192.168.56.1:3000/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'cin': cin, 'password': password}),

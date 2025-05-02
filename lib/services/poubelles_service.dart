@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 class PoubellesService {
-  final String baseUrl = "http://localhost:3000"; // Change si backend est en ligne
+  final baseUrl = dotenv.env['API_HOST']; 
 
 
   // 📦 Récupérer toutes les poubelles

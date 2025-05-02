@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../screens/auth/login_screen.dart';
 import '../services/sites_services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CollectorDashboardScreen extends StatefulWidget {
   const CollectorDashboardScreen({Key? key}) : super(key: key);
@@ -20,6 +21,9 @@ class CollectorDashboardScreen extends StatefulWidget {
 }
 
 class _CollectorDashboardScreenState extends State<CollectorDashboardScreen> {
+  
+
+final  baseUrl = dotenv.env['API_HOST'] ;
   List<LatLng> routePoints = [];
   List<Marker> poubelleMarkers = [];
   bool _isLoading = false;
@@ -83,7 +87,7 @@ class _CollectorDashboardScreenState extends State<CollectorDashboardScreen> {
 
       final secteursCSV = secteurs.join(',');
       final uri = Uri.parse(
-        'http://localhost:3000/api/itineraire/itineraire-optimal?latitude=$currentLat&longitude=$currentLng&secteurs=${Uri.encodeComponent(secteursCSV)}',
+        '$baseUrl/api/itineraire/itineraire-optimal?latitude=$currentLat&longitude=$currentLng&secteurs=${Uri.encodeComponent(secteursCSV)}',
       );
       final response = await http.get(uri);
 

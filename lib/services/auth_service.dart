@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthService with ChangeNotifier {
-  final String baseUrl = "http://localhost:3000"; 
+  final baseUrl = dotenv.env['API_HOST'];
   User? get currentUser => _firebaseAuth.currentUser;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 

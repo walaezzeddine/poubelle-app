@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:poubelle/screens/admin-dashboard-screen.dart';
 import 'package:poubelle/screens/auth/reset_password_screen.dart';
 import 'package:poubelle/screens/collector-dashboard-screen.dart';
@@ -15,13 +16,20 @@ import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
 import 'package:poubelle/screens/manage-poubelles-screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Charger le fichier .env depuis la racine du projet
+  await dotenv.load(fileName:'.env');
+  print(dotenv.env);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -30,7 +38,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Utiliser ChangeNotifierProvider au lieu de Provider
         ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
       ],
       child: MaterialApp(
@@ -53,7 +60,7 @@ class MyApp extends StatelessWidget {
           '/statistics': (context) => StatisticsScreen(),
           '/manage-poubelles': (context) => ManagePoubellesScreen(),
         },
-        onUnknownRoute: (settings) { 
+        onUnknownRoute: (settings) {
           return MaterialPageRoute(
             builder: (_) => LoginScreen(),
           );

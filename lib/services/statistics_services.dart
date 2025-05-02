@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class StatisticsService {
-  final String baseUrl = "http://localhost:3000";
+ final baseUrl = dotenv.env['API_HOST'];
 
   // ➤ Nombre total d'utilisateurs
   Future<int> getUserCount() async {
