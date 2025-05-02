@@ -116,14 +116,21 @@ class PoubellesService {
   }
 
   // 📦 Récupérer les poubelles pleines
-  Future<List<Map<String, dynamic>>> getPoubellesPleine() async {
-    try {
-      final poubelles = await getPoubelles();
-      return poubelles.where((poubelle) => poubelle['pleine'] == true).toList();
-    } catch (e) {
-      throw Exception('Erreur lors de la récupération des poubelles pleines : $e');
-    }
+ Future<List<Map<String, dynamic>>> getPoubellesPleine(List<String> secteurs) async {
+  try {
+    final poubelles = await getPoubelles();
+
+    // Filtrer les poubelles pleines ET dont le secteur est dans la liste fournie
+    return poubelles.where((poubelle) =>
+      poubelle['pleine'] == true &&
+      secteurs.contains(poubelle['secteur'])
+    ).toList();
+
+  } catch (e) {
+    throw Exception('Erreur lors de la récupération des poubelles pleines : $e');
   }
+}
+
 
 
 }

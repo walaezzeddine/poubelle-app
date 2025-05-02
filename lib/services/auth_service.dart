@@ -23,6 +23,17 @@ class AuthService with ChangeNotifier {
     notifyListeners();  // Notify listeners when _role changes
   }
 
+  String? _userId;
+
+String? get userId => _userId;
+
+set userId(String? id) {
+  print(id);
+  _userId = id;
+  notifyListeners();
+}
+
+
   bool _isAuthenticated = false;
 
   bool get isAuthenticated => _isAuthenticated;
@@ -48,7 +59,10 @@ class AuthService with ChangeNotifier {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+       print("ttttt");
+      print(data);
       _role = data['role']; // Assuming the role is part of the user data
+      _userId = data['id'];
       return data;
     } else {
       throw Exception(jsonDecode(response.body)['error'] ?? 'Erreur lors de la connexion');
@@ -102,6 +116,7 @@ class AuthService with ChangeNotifier {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       _role = data['role']; // Assuming the role is part of the user data
+      _userId=data['id'];
       return data;
     } else {
       throw Exception(jsonDecode(response.body)['error'] ?? 'Erreur lors de la récupération');

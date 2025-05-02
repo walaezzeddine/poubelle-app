@@ -118,6 +118,27 @@ Future<void> addSecteur(int codeP, int nbPoubelles, String nom, String chauffeur
     }
   }
 
+    // Récupérer le secteur affecté à un chauffeur
+  Future<List<String>> getSecteurByChauffeurID(String chauffeurID) async {
+  try {
+    final response = await http.get(Uri.parse('$baseUrl/api/secteur/secteurs/affectation/$chauffeurID'));
+    print(response.body);
+    if (response.statusCode == 200) {
+      final List<dynamic> secteurs = json.decode(response.body);
+      // On extrait uniquement les noms des secteurs
+      return secteurs.map<String>((secteur) => secteur['nom'].toString()).toList();
+    } else if (response.statusCode == 404) {
+      throw Exception('Aucun secteur trouvé pour ce chauffeur');
+    } else {
+      throw Exception('Erreur lors de la récupération du secteur : ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Erreur lors de la récupération du secteur : $e');
+  }
+}
+
+
+
 
 }
 

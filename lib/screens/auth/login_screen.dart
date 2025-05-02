@@ -56,10 +56,10 @@ class LoginScreen extends StatelessWidget {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
         // Update role in AuthService based on response
         Provider.of<AuthService>(context, listen: false).setAuthenticated(true);
-        Provider.of<AuthService>(context, listen: false).role = data['role'];  // Update the role
+        Provider.of<AuthService>(context, listen: false).role = data['role']; 
+        Provider.of<AuthService>(context, listen: false).userId = data['uid']; // Update the role
 
         // Navigate based on role
         switch (data['role']) {
@@ -106,7 +106,7 @@ class LoginScreen extends StatelessWidget {
             const SizedBox(height: 60),
             const Center(
               child: Text(
-                'Poubelle',
+                'EcoVia',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,

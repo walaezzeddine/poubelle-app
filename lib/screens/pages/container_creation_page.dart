@@ -300,6 +300,7 @@ Future<void> _geocodeAddress(String address) async {
         latitude: lat,
         longitude: lng,
         adresse: adresse,
+        secteur: _selectedSecteur
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
