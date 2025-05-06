@@ -53,6 +53,7 @@ class OpenRouteService {
   // 🚀 Nouvelle méthode pour un trajet entre PLUSIEURS points
   Future<List<LatLng>> getRouteBetweenMultiplePoints(List<LatLng> points) async {
     final url = Uri.parse('$baseUrl/geojson');
+//final url = Uri.parse(baseUrl); // au lieu de baseUrl/geojson
 
 
     // Construire le corps de la requête
@@ -61,6 +62,7 @@ class OpenRouteService {
 
     final body = json.encode({
       "coordinates": coordinates,
+      "format": "geojson",
       "instructions": false,
     });
 
@@ -85,6 +87,7 @@ class OpenRouteService {
         return LatLng(coord[1] as double, coord[0] as double);
       }).toList();
     } else {
+       print('Erreur API: ${response.statusCode} - ${response.body}');
       throw Exception('Erreur lors de la récupération de l\'itinéraire multiple');
     }
   }

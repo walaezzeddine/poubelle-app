@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:poubelle/screens/admin-dashboard-screen.dart';
 import 'package:poubelle/screens/auth/reset_password_screen.dart';
 import 'package:poubelle/screens/collector-dashboard-screen.dart';
@@ -26,6 +27,14 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+// 🔴 Demande de permission pour la localisation
+  var status = await Permission.location.request();
+  if (status.isDenied || status.isPermanentlyDenied) {
+    print("L'utilisateur a refusé la permission de localisation.");
+    // Tu peux rediriger l'utilisateur vers les paramètres si besoin
+    // openAppSettings();
+  }
+  
   runApp(const MyApp());
 }
 

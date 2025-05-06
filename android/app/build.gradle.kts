@@ -26,6 +26,12 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true  // Important pour Firebase
+
+        ndk {
+        abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+    }
+    ndkVersion = "27.2.12479018"
+
     }
 
     buildTypes {
@@ -39,7 +45,7 @@ android {
         }
         debug {
             ndk {
-                abiFilters.add("x86_64")  // Pour l'émulateur
+                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
             }
         }
     }

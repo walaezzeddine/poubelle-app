@@ -78,7 +78,9 @@ final  baseUrl = dotenv.env['API_HOST'] ;
         height: 70,
         child: const Icon(Icons.fire_truck, color: Color.fromARGB(255, 239, 123, 7)),
       );
-
+      print("***************");
+      print(currentLat);
+      print(currentLng);
       if (secteurs.isEmpty) {
         print("Aucun secteur défini !");
         setState(() => _isLoading = false);
@@ -86,6 +88,7 @@ final  baseUrl = dotenv.env['API_HOST'] ;
       }
 
       final secteursCSV = secteurs.join(',');
+
       final uri = Uri.parse(
         '$baseUrl/api/itineraire/itineraire-optimal?latitude=$currentLat&longitude=$currentLng&secteurs=${Uri.encodeComponent(secteursCSV)}',
       );
