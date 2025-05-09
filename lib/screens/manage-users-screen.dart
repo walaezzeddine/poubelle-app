@@ -4,6 +4,7 @@ import '../../screens/admin-menu-drawer.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/register_screen.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -270,8 +271,16 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () => _showUserDialog(),
-              icon: const Icon(Icons.add, color: Color.fromARGB(255, 48, 48, 48)),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                );
+                if (result == true) {
+                  _loadUsers(); // Recharger la liste après ajout
+                }
+              },
+              icon: const Icon(Icons.add),
               label: const Text('Ajouter un utilisateur'),
             ),
           ],

@@ -80,13 +80,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final registeredRole = result['role'];
 
       if (!mounted) return;
+      
+      Navigator.of(context).pop(true); // Renvoie "true" à l'écran précédent
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => _getDashboardForRole(registeredRole)),
-          (route) => false,
-        );
-      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur : ${e.toString()}'),backgroundColor: Colors.red,),
@@ -96,136 +92,101 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  Widget _getDashboardForRole(String role) {
-    switch (role) {
-      case 'admin':
-        return const AdminDashboardScreen();
-      case 'chauffeur':
-        return const CollectorDashboardScreen();
-      case 'agent':
-      default:
-        return const UserDashboardScreen();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inscription'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back), // Flèche gauche
-          onPressed: () async {
-            await Provider.of<AuthService>(context, listen: false).signOut();
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-              (route) => false,
-            );
-          },
-        ),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _nomController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
+@override
+Widget build(BuildContext context) {
+  return Dialog(
+    insetPadding: const EdgeInsets.all(20),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Ajouter un utilisateur',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _nomController,
+              decoration: const InputDecoration(
+                labelText: 'Nom',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _prenomController,
-                decoration: const InputDecoration(
-                  labelText: 'Prénom',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _prenomController,
+              decoration: const InputDecoration(
+                labelText: 'Prénom',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _cinController,
-                decoration: const InputDecoration(
-                  labelText: 'Cin',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
-                keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _cinController,
+              decoration: const InputDecoration(
+                labelText: 'Matricule',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Mot de passe',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
-                ),
-                obscureText: true,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Mot de passe',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration: const InputDecoration(
-                  labelText: 'Confirmer le mot de passe',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_reset),
-                ),
-                obscureText: true,
+              obscureText: true,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _confirmPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Confirmer le mot de passe',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: _selectedRole,
-                items: const [
-                  DropdownMenuItem(
-                    value: 'agent',
-                    child: Text('Agent'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'chauffeur',
-                    child: Text('Chauffeur'),
-                  ),
-                ],
-                onChanged: (value) => setState(() => _selectedRole = value!),
-                decoration: const InputDecoration(
-                  labelText: 'Rôle',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              value: _selectedRole,
+              items: const [
+                DropdownMenuItem(value: 'agent', child: Text('Agent')),
+                DropdownMenuItem(value: 'chauffeur', child: Text('Chauffeur')),
+              ],
+              onChanged: (value) => setState(() => _selectedRole = value!),
+              decoration: const InputDecoration(
+                labelText: 'Rôle',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Annuler'),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
                   onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'S\'INSCRIRE',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      ? const SizedBox(
+                          height: 20, width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('Ajouter'),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

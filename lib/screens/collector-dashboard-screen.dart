@@ -147,7 +147,7 @@ final  baseUrl = dotenv.env['API_HOST'] ;
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Itinéraire de collecte'),
+        title: Text('Itinéraire de collecte des secteurs : ${secteurs.join(', ')}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

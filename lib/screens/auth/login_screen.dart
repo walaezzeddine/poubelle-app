@@ -126,7 +126,7 @@ class LoginScreen extends StatelessWidget {
             TextField(
               controller: _cinController,
               decoration: const InputDecoration(
-                labelText: 'Cin',
+                labelText: 'Matricule',
                 border: UnderlineInputBorder(),
                 prefixIcon: Icon(Icons.email),
               ),
@@ -179,25 +179,6 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/register'),
-                child: const Text.rich(
-                  TextSpan(
-                    text: "Vous n'avez pas de compte ? ",
-                    children: [
-                      TextSpan(
-                        text: 'S\'inscrire',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),

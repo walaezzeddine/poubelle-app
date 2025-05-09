@@ -83,7 +83,9 @@ class _ManageSitesScreenState extends State<ManageSitesScreen> {
 
     // Prendre l'ID du chauffeur existant ou null si pas de secteur
     final initialChauffeurID = secteur != null ? secteur['chauffeurID'] : null;
-
+    setState(() {
+      _selectedChauffeurID=initialChauffeurID;
+    });
     await showDialog(
       context: context,
       builder: (context) {
